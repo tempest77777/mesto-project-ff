@@ -1,29 +1,42 @@
 export function showPopup(popup) {
-    popup.classList.add('popup_is-opened');
-    document.addEventListener('keydown', handleEscapeClose);
+    popup.classList.add('popup-opened');
+    document.addEventListener('keydown', pressEscape);
 }
 
 export function closePopup(popup) {
-    popup.classList.remove('popup_is-opened');
-    document.removeEventListener('keydown', handleEscapeClose);
+    popup.classList.remove('popup-opened');
+    document.removeEventListener('keydown', pressEscape);
 }
 
-// Универсальная функция для закрытия только одного открытого модального окна
-export function closeOpenedPopup() {
-    const openPopup = document.querySelector('.popup_is-opened');
-    if (openPopup) closePopup(openPopup);
-}
-
-// Закрытие окна при нажатии на Escape
-function handleEscapeClose(event) {
-    if (event.code === 'Escape') {
-        closeOpenedPopup();
+function pressEscape(event) {
+    if (event.key === 'Escape') {
+        const openedPopup = document.querySelector('.popup-opened');
+        if (openedPopup) {
+            closePopup(openedPopup);
+        }
     }
 }
 
-// Установка закрытия по клику на оверлей
-export function setupOverlayClose(popup) {
-    popup.addEventListener('click', (event) => {
-        if (event.target === popup) closePopup(popup);
-    });
+export function handleCardImageClick(cardData) {
+    const popupImg = document.querySelector('.popup_type_image');
+    const popupImage = popupImg.querySelector('.popup__image');
+    const popupCaption = popupImg.querySelector('.popup__caption');
+    popupImage.src = cardData.link;
+    popupImage.alt = cardData.name;
+    popupCaption.textContent = cardData.name;
+    showPopup(popupImg);
+}
+
+export function handleFormSubmitForEditProfilePopup(evt) {
+    evt.preventDefault();
+    const popupEdit = document.querySelector('.popup_type_edit');
+    const profileTitle = document.querySelector('.profile__title');
+    const profileDesc = document.querySelector('.profile__description');
+    const nameInput = document.querySelector('.popup__input_type_name');
+    const jobInput = document.querySelector('.popup__input_type_description');
+    const nameValue = nameInput.value;
+    const jobValue = jobInput.value;
+    profileTitle.textContent = nameValue;
+    profileDesc.textContent = jobValue;
+    closePopup(popupEdit);
 }
