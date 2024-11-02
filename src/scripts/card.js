@@ -1,6 +1,5 @@
-import { handleCardImageClick } from './modal.js';
+import { handleCardImageClick,showPopup, closePopup } from './modal.js';
 import { toggleLike, token } from './api.js'; 
-import { showPopup, closePopup } from './modal.js';
 
 
 export function createCard(cardData, userId) {
