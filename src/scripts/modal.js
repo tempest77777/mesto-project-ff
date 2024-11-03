@@ -16,7 +16,7 @@ function pressEscape(event) {
         }
     }
 }
-
+ 
 export function handleCardImageClick(cardData) {
     const popupImg = document.querySelector('.popup_type_image');
     const popupImage = popupImg.querySelector('.popup__image');
