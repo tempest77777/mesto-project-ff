@@ -1,0 +1,146 @@
+@font-face {
+  font-family: 'Inter';
+  font-style:  normal;
+  font-weight: 400;
+  src: url("./fonts/Inter-Regular.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style:  normal;
+  font-weight: 500;
+  src: url("./fonts/Inter-Medium.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: 'Inter';
+  font-style:  normal;
+  font-weight: 900;
+  src: url("./fonts/Inter-Black.woff2") format("woff2");
+}
+
+.popup__error {
+  color: rgba(255, 0, 0, 1);
+  font-family: 'Inter';
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 14.52px;
+  display: block; 
+  margin-top: 4px; 
+}
+
+.profile__image {
+  position: relative;
+  width: 100px; /* задайте желаемую ширину и высоту для аватара */
+  height: 100px;
+  background-image: url('../images/avatar.jpg'); /* замените путь, если это необходимо */
+  background-size: cover;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.profile__image::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px; /* размер самой иконки */
+  height: 16px;
+  background: url('../images/Vector.svg') no-repeat center;
+  background-size: contain;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.profile__image:hover::before {
+  opacity: 1;
+}
+
+.popup__content {
+  position: relative;
+  width: 100%;
+  padding: 20px;
+}
+
+.popup__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.popup__close-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.popup__input {
+  width: calc(100% - 32px);
+  height: 32px;
+  margin-top: 20px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.popup__button {
+  width: 100%;
+  height: 32px;
+  background-color: #000;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-top: 16px;
+}
+
+.popup__error {
+  color: red;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* Иконка редактирования аватара при наведении */
+.profile__image {
+  position: relative;
+  width: 100px; 
+  height: 100px;
+  background-image: url('../images/avatar.jpg'); 
+  background-size: cover;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.profile__image::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  background: url('../images/Vector.svg') no-repeat center;
+  background-size: contain;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.profile__image:hover::before {
+  opacity: 1;
+}
+
+.profile-pen {
+  width: 30px;
+  height: 30px;
+  cursor: pointer;
+  border: none;
+  outline: none;
+  background: transparent;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
