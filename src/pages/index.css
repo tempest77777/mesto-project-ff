@@ -24,6 +24,7 @@
     transition: opacity 0.5s ease, visibility 0s 0.5s; 
     justify-content: center;
     align-items: center;
+    z-index: 10;
 }
 
 .popup-opened {
