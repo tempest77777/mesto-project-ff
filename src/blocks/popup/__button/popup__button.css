@@ -13,7 +13,10 @@
   transition: visibility 0s, background 0.3s;
   margin-top: 48px;
 }
-
+.popup__button-disabled {
+  color: red;
+  opacity: 0.5;
+}
 .popup__button:hover {
   background: rgba(0, 0, 0, 0.8);
   cursor: pointer;

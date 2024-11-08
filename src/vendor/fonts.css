@@ -33,7 +33,7 @@
   position: relative;
   width: 100px; /* задайте желаемую ширину и высоту для аватара */
   height: 100px;
-  background-image: url('../images/avatar.jpg'); /* замените путь, если это необходимо */
+  /* background-image: url('../images/avatar.jpg'); замените путь, если это необходимо */
   background-size: cover;
   border-radius: 50%;
   cursor: pointer;
@@ -108,7 +108,7 @@
   position: relative;
   width: 100px; 
   height: 100px;
-  background-image: url('../images/avatar.jpg'); 
+  /* background-image: url('../images/avatar.jpg');  */
   background-size: cover;
   border-radius: 50%;
   cursor: pointer;
