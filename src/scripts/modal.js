@@ -1,6 +1,8 @@
 import {editProfile, updateUserAvatar} from "./index";
-import {addCard, removeFromDisplay} from "./card";
+import { removeFromDisplay} from "./card";
+import { add_card } from "./card";
 import {deleteCard} from "./api";
+import { validate_avatar, validate_profile, validate_add_card } from "./validation";
 
 // Функция для открытия попапа
 export function showPopup(popup) {
@@ -31,16 +33,19 @@ export const handleButtonClick = (event) => {
 	// Кнопка открытия добавления карточки
 	if (button.classList.contains("profile__add-button")) {
 		const addCardPop = document.querySelector(".popup_type_new-card");
+		validate_add_card();
 		showPopup(addCardPop);
 	}
 	// Кнопка открытия изменения профиля
 	if (button.classList.contains("profile__edit-button")) {
 		const editProfilePop = document.querySelector(".popup_type_edit");
+		validate_profile();
 		showPopup(editProfilePop);
 	}
 	// Кнопка открытия изменения аватара
 	if (button.classList.contains("profile-pen")) {
 		const editProfilePop = document.querySelector(".popup_type_avatar");
+		validate_avatar()
 		showPopup(editProfilePop);
 	}
 	//Кнопка закрытия модальных окон
@@ -74,12 +79,14 @@ export const handleButtonClick = (event) => {
 	// Кнопка "Сохранить" редактирования аватара
 	if (button.classList.contains("save__avatar")) {
 		event.preventDefault();
-		updateUserAvatar();
+		if(validate_avatar){
+			updateUserAvatar();
+		}
 	}
 	// Кнопка добавления карточки
 	if (button.classList.contains("save__img")) {
 		event.preventDefault();
-		addCard();
+		add_card()
 	}
 };
 

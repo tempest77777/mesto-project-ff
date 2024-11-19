@@ -1,17 +1,16 @@
-import {showPopup, closePopup} from "./modal.js";
-import {addNewCard, toggleLike_1} from "./api";
-import {checkImageInput, checkTextInput} from "./validation";
+import { closePopup} from "./modal.js";
+import { toggleLike, add_new_card } from "./api";
 import { handleCardImageClick } from "./index";
 
-const saveButton = document.querySelector(".save__img"); // Кнопка "Сохранить"
 const cardLinkField = document.querySelector(".popup__input_type_url"); // Поле ввода ссылки на картинку
 const cardDescField = document.querySelector(".popup__input_type_card-name"); // Поле ввода названия картинки
 const gal = document.querySelector(".places__list"); // Общий контейнер карточек
-const errorMessage = document.querySelector("#add__card-error"); // Сообщение о ошибке валидации
+
+
 // Функция для создания карточки на основе данных с сервера
 export function createCard(cardData, userId) {
-	const cardTemplate = document.querySelector("#card-template").content;
-	const cardElement = cardTemplate.cloneNode(true);
+	const cardTemplate = document.querySelector("#card-template").content; // Находим шаблон для карточки
+	const cardElement = cardTemplate.cloneNode(true); // Создаем элемент карточки путем копирования шаблона
 
 	// Устанавливаем ID карточки -- OK
 	const card = cardElement.querySelector(".places__item");
@@ -55,87 +54,32 @@ export function createCard(cardData, userId) {
 	return cardElement;
 }
 
-// Функция рендеринга карточек на дисплее
-export function renderCards(cards, userId) {
-	const cardContainer = document.querySelector(".places__list");
-	cardContainer.innerHTML = "";
-	cards.forEach((cardData) => {
-		const cardElement = createCard(cardData, userId);
-		cardContainer.append(cardElement);
-	});
-}
-
-// Функции для проверки корректности введенных значений
-function isValidLink(inputValue) {
-	return checkImageInput(inputValue);
-}
-function isValidDesc(inputValue) {
-	return checkTextInput(inputValue);
-}
-
-// Функция для обновления состояния кнопки
-function updateButtonState() {
-	const linkIsValid = isValidLink(cardLinkField.value);
-	const descIsValid = isValidDesc(cardDescField.value);
-	console.log(saveButton.disabled);
-
-	// Переключение кнопки из активного состояния в неактивное и обратно, добавление сообщения о ошибке и стиля неактивной кнопки
-	if (linkIsValid && descIsValid) {
-		saveButton.disabled = false;
-		saveButton.classList.remove("popup__button-disabled");
-		errorMessage.textContent = "";
-	} else {
-		saveButton.disabled = true;
-		saveButton.classList.add("popup__button-disabled");
-		errorMessage.textContent =
-			"Разрешены только латинские, кириллические буквы, знаки дефиса и пробелы в поле ввода описания и ссылки на изображения с расширением jpg | jpeg | png | gif | bmp | webp";
-	}
-}
-
-// Обработчики событий для каждого поля ввода
-cardLinkField.addEventListener("input", updateButtonState);
-cardDescField.addEventListener("input", updateButtonState);
-
 // Функция добавления карточки
-export function addCard() {
-	// Если оба поля заполнены корректно, обновляем данные
-	const getNewCard = async function () {
-		if (isValidLink(cardLinkField.value) && isValidDesc(cardDescField.value)) {
-			const newCard = await addNewCard(
-				cardDescField.value,
-				cardLinkField.value
-			);
-			if (newCard) {
-				// Создаем карточку и получаем данные
-				const cardElement = createCard(newCard, newCard.owner._id);
-				const likeButton = cardElement.querySelector(".card__like-button");
-				const cardId = newCard._id;
-				const likeCount = cardElement.querySelector(".card__like-count");
-				//Слушатель для добавления и снятия лайка
-				likeButton.addEventListener("click", () => {
-					const isLiked = likeButton.classList.contains(
-						"card__like-button_is-active"
-					);
-					toggleLike_1(cardId, isLiked);
-					isLiked == true ? likeCount.textContent-- : likeCount.textContent++;
-					likeButton.classList.toggle("card__like-button_is-active");
-				});
-				// Добавляем карточку в разметку
-				gal.prepend(cardElement);
-			}
-			//Закрываем попап
-			closePopup(document.querySelector(".popup_type_new-card"));
-			updateButtonState();
-		}
-	};
-	// Добавляем новую карточку и сбрасываем поля
-	getNewCard();
-	cardDescField.value = "";
-	cardLinkField.value = "";
-}
-updateButtonState();
+export function add_card(){
+	add_new_card(cardDescField.value, cardLinkField.value).then((data) => {
+		if(data){
+			const userId = document.querySelector('.profile__info');
+			const new_card = createCard(data, userId.id);
+			const likeButton = new_card.querySelector(".card__like-button");
+			const likeCount = new_card.querySelector(".card__like-count");
+			const cardId = data._id;
+			likeButton.addEventListener("click", () => {
+				const isLiked = likeButton.classList.contains(
+					"card__like-button_is-active"
+				);
+				toggleLike(cardId, isLiked);
+				isLiked == true ? likeCount.textContent-- : likeCount.textContent++;
+				likeButton.classList.toggle("card__like-button_is-active");
+			});
+			gal.prepend(new_card)
+			cardDescField.value = "";
+			cardLinkField.value = "";
+			closePopup(document.querySelector(".popup_type_new-card"))
+		};
+	});
+};
 
 export function removeFromDisplay(card) {
 	const display = document.querySelector(".places__list");
 	display.removeChild(card);
-}
+};

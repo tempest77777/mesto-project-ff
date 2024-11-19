@@ -1,7 +1,5 @@
-// api.js
-
-export const token = '8303b431-fff7-4eed-95da-47a7d0571887';
-export const cohortId = 'wff-cohort-25';
+const token = '8303b431-fff7-4eed-95da-47a7d0571887';
+const cohortId = 'wff-cohort-25';
 
 // Конфигурация для всех запросов
 const config = {
@@ -12,122 +10,128 @@ const config = {
     }
 };
 
-//  Запросы к серверу
-export async function fetchData(url, options = {}) {
-  return fetch(`https://nomoreparties.co/v1/${cohortId}${url}`, {
-      headers: {
-          authorization: token,
-          'Content-Type': 'application/json',
-          ...options.headers
-      },
-      ...options
-  })
-  .then(res => res.ok ? res.json() : Promise.reject(`Ошибка: ${res.status}`))
-  .catch(err => console.error(err));
+// Пути для URL
+const paths = {
+    userInfo: '/users/me',
+    cards: '/cards',
+    likes: '/cards/likes/',
+    avatar: '/users/me/avatar'
+};
+
+// Методы для запроса
+const methods = {
+    GET: 'GET',
+    POST: 'POST',
+    PUT: 'PUT',
+    DEL: 'DELETE',
+    PATCH: 'PATCH'
 }
 
-// Проверка ответа от сервера
-const checkResponse = (res) => {
-  if (res.ok) {
-    return res.json();
-  }
-  return Promise.reject(`Ошибка: ${res.status}`);
-};
-  
-// Функция для получения информации о пользователе
-export const getUserInfo = async () => {
-  try{
-    const res = await fetch(`${config.baseUrl}/users/me`, {
-      headers: config.headers
+// Функция для получения информации о пользователе и списка карточек -- ok
+export function get_user_and_cards() {
+    const user_data_response = fetch(`${config.baseUrl}${paths.userInfo}`, {
+        method: methods.GET,
+        headers: config.headers, 
+    })
+    .then((res) => {
+        if(!res.ok) {
+            return false
+        };
+        return res.json();
     });
-    const userData = await res.json()
-    console.log("Информация о пользователе ->", userData)
-    return userData;
-   } catch(e) {
-    console.log(e.message)
-  }
-};
-
-// Функция для получения начальных карточек
-export const getInitialCards = async () => {
-  try {
-    const res = await fetch(`${config.baseUrl}/cards`, {
-      headers: config.headers
+    const cards_data_response = fetch(`${config.baseUrl}${paths.cards}`, {
+        method: methods.GET,
+        headers: config.headers, 
+    })
+    .then((res) => {
+        if(!res.ok) {
+            return false
+        };
+        return res.json()
     });
-    console.log(res)
-    const initialCards = await res.json();
-    console.log("Полученные карточки -> ", initialCards)
-    return initialCards
-  } catch(e) {
-    console.log(e.message)
-  }
+
+    return Promise.all([user_data_response, cards_data_response])
 };
 
-// Функция для обновления информации о пользователе
-// 5. Редактирование профиля Функция для обновления информации о пользователе
-export const updateUserInfo = async (name, about) => {
-  const res = await fetch(`${config.baseUrl}/users/me`, {
-    method: 'PATCH',
-    headers: config.headers,
-    body: JSON.stringify({ name, about })
-  });
-  return checkResponse(res);
+// Функция для изменения аватара -- ok
+export function change_avatar(link){
+    const response = fetch(`${config.baseUrl}${paths.avatar}`, {
+        method: methods.PATCH,
+        headers: config.headers,
+        body: JSON.stringify({ avatar: link })
+    })
+    .then((res) => {
+        if (!res.ok) {
+            console.log(`Error => ${res.statusText}`);
+            return false;
+        }
+        return res.ok;
+    })
+    return response;
 };
 
+// Функция для изменения данных пользователя -- ok
+export function change_user_info(name, about) {
+    const response = fetch(`${config.baseUrl}${paths.userInfo}`, {
+      method: methods.PATCH,
+      headers: config.headers,
+      body: JSON.stringify({ name, about })
+  })
+    .then((res) => {
+        if (!res.ok) {
+            console.log(`Error => ${res.statusText}`);
+            return false;
+        }
+        return res.ok;
+    })
+    return response;
+};
 
-// Функция для добавления новой карточки
-export const addNewCard = async (name, link) => {
-  const res = await fetch(`${config.baseUrl}/cards`, {
-    method: 'POST',
+// Функция удаления карточки -- ok
+export function deleteCard(card_id){
+  const response = fetch(`${config.baseUrl}${paths.cards}/${card_id}`, {
+    method: methods.DEL,
+    headers: config.headers
+})
+  .then((res) => {
+      if (!res.ok) {
+          console.log(`Error => ${res.statusText}`);
+          return false;
+      }
+      return res.ok;
+  })
+  return response;
+};
+
+// Функция для постановки/снятия лайка -- ok
+export function toggleLike(cardID, isLiked){
+  const response = fetch(`${config.baseUrl}${paths.likes}${cardID}`, {
+    method: isLiked ? methods.DEL : methods.PUT,
+    headers: config.headers
+})
+  .then((res) => {
+      if (!res.ok) {
+          console.log(`Error => ${res.statusText}`);
+          return false;
+      }
+      return res.ok;
+  })
+  return response;
+};
+
+// Функция для добавления новой карточки -- ok
+export function add_new_card(name, link) {
+  const response = fetch(`${config.baseUrl}${paths.cards}`, {
+    method: methods.POST,
     headers: config.headers,
     body: JSON.stringify({ name, link })
-  });
-  console.log('send')
-  return checkResponse(res);
-};
-
-// Функция для удаления карточки
-export const deleteCard = async (cardId) => {
-  const res = await fetch(`${config.baseUrl}/cards/${cardId}`, {
-    method: 'DELETE',
-    headers: config.headers
-  });
-  return checkResponse(res);
-};
-
-// Функция для постановки/снятия лайка
-export const toggleLike_1 = async (cardId, isLiked) => {
-  const res = await fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
-    method: isLiked ? 'DELETE' : 'PUT',
-    headers: config.headers
-  });
-  return checkResponse(res);
-};
-
-
-export async function che(CardData) {
-  const url = `https://nomoreparties.co/v1/${cohortId}/cards/likes/${CardData}`;
-  try {
-    const res = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        authorization: token
+})
+  .then((res) => {
+      if (!res.ok) {
+          console.log(`Error => ${res.statusText}`);
+          return false;
       }
-    }
-    )
-    console.log(res)
-  } catch (error) {
-    console.log(e.message)
-  }
-}
-
-// Функция для обновления аватара
-export const updateAvatar = async (avatarUrl) => {
-  const res = await fetch(`${config.baseUrl}/users/me/avatar`, {
-    method: 'PATCH',
-    headers: config.headers,
-    body: JSON.stringify({ avatar: avatarUrl })
-  });
-  console.log('ava send')
-  return checkResponse(res);
+      return res.json();
+  })
+  return response;
 };
