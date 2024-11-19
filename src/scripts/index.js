@@ -3,6 +3,7 @@ import { handleButtonClick, closePopup, showPopup } from "./modal.js";
 import { toggleLike, change_avatar, get_user_and_cards, change_user_info } from "./api.js";
 import "../pages/index.css";
 
+
 const userName = document.querySelector(".profile__title"); // Имя пользователя
 const userAbot = document.querySelector(".profile__description"); // Занятие пользователя
 const userId = document.querySelector('.profile__info')
