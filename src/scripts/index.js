@@ -1,89 +1,189 @@
-import { createCard } from "./card.js";
-import { handleButtonClick, closePopup, showPopup } from "./modal.js";
-import { toggleLike, change_avatar, get_user_and_cards, change_user_info } from "./api.js";
+import {createCard, likeCard, delCard} from "./card";
+import {closePopup, showPopup} from "./modal";
+import {addNewCard, changeUserAvatar, changeUserInfo, getUserInfoAndCards} from "./api";
+import {clearValidation, enableValidation} from "./validation";
 import "../pages/index.css";
 
-
+const container = document.querySelector(".places__list"); // Общий контейнер карточек
+// Информация о пользователе
 const userName = document.querySelector(".profile__title"); // Имя пользователя
-const userAbot = document.querySelector(".profile__description"); // Занятие пользователя
-const userId = document.querySelector('.profile__info')
-const profileName = document.querySelector(".popup__input_type_name"); // Поле ввода имени
-const profileDesc = document.querySelector(".popup__input_type_description"); // Поле ввода описания
-const currentName = document.querySelector(".profile__title"); // Имя
-const currentDesc = document.querySelector(".profile__description"); // Описание
-const avatarInput = document.querySelector(".popup__input_type_avatar-link"); // Поле ввода ссылки на аватар
-const userAvatar = document.querySelector(".profile__image"); // Аватар пльзователя
+const userAbout = document.querySelector(".profile__description"); // Занятие пользователя
+const userAvatar = document.querySelector(".profile__image"); // Аватар пользователя
+// Popup - окно просмотра карточки
+const popupImg = document.querySelector(".popup_type_image"); // Окно
+const popupImage = popupImg.querySelector(".popup__image");  // Название
+const popupCaption = popupImg.querySelector(".popup__caption"); // Описание
+// Кнопки открытия popup
+const openAddCardBtn = document.querySelector(".profile__add-button"); // Добавление карточки
+const openEditProfileBtn = document.querySelector(".profile__edit-button"); // Редактирование профиля
+const openEditAvatarBtn = document.querySelector(".profile-pen"); // Редактирование аватара
+// Форма добавления карточки
+const formAddCard = document.querySelector(".add_card"); // Форма
+const inputNameCard = formAddCard.querySelector('.popup__input_type_card-name'); // Ввод названия
+const inputLinkCard = formAddCard.querySelector('.popup__input_type_url');  // Ввод ссылки
+const saveCardBtn = formAddCard.querySelector(".save__img"); // Кнопка сохранить
+// Форма изменения профиля
+const editProfileForm = document.querySelector(".edit_profile"); // Форма
+const inputNameProfile = editProfileForm.querySelector(".popup__input_type_name"); // Ввод имя
+const inputAboutProfile = editProfileForm.querySelector(".popup__input_type_description"); // Ввод описания
+const saveProfileBtn = editProfileForm.querySelector(".save__profile"); // Кнопка сохранить
+// Форма изменения аватар
+const editAvatarForm = document.querySelector(".avatar_update"); // Форма
+const inputLinkAvatar = editAvatarForm.querySelector(".popup__input_type_avatar-link"); // Ввод ссылки
+const saveAvatarBtn = editAvatarForm.querySelector(".save__avatar"); // Кнопка сохранить
+// Popup - окна
+const popupAddCard = document.querySelector(".popup_type_new-card"); // Окно добавления карточки
+const editProfilePopup = document.querySelector(".popup_type_edit");  // Окно редактирования профиля
+const editAvatarPopup = document.querySelector(".popup_type_avatar");  // Окно редактирования аватара
+// Кнопки закрытия popup - окон
+const closeButtons = document.querySelectorAll(".popup__close"); // Все крестики
 
-// Функция отображения начальной страницы
-function display() {
-	get_user_and_cards().then((data) => {
-		if(data[0] && data[1]) {
-			// Устанавливаем информацию о пользователе
-			userAvatar.style.backgroundImage = `url(${data[0].avatar})`; //Установка аватара
-			userName.textContent = data[0].name; // Установка имени пользователя
-			userAbot.textContent = data[0].about; // Установка занятия пользователя
-			userId.id = data[0]._id;
-
-			//Создаем и отображаем карточки
-			const cardContainer = document.querySelector(".places__list"); // Находим основной контейнер под карточки
-			cardContainer.innerHTML = ""; // Проверить???
-			data[1].forEach((cardData) => {											// На основе данных с сервера
-				const cardElement = createCard(cardData, data[0]._id);				// Создаем карточки
-				cardContainer.append(cardElement);									// Добавляем карточку в контейнер
-			});
-
-			//Расстановка лайков на карточки и проверка лайкнутых
-			const likeButtons = document.querySelectorAll(".card__like-button"); // находим кнопки лайков на карточках
-			const likeCount = document.querySelectorAll(".card__like-count"); // находим колличество лайков на карточках
-			likeButtons.forEach((button, index) => {
-				button.addEventListener("click", () => {
-					const currentCard = data[1][index];
-					const cardId = currentCard._id;
-					const isLiked1 = button.classList.contains("card__like-button_is-active");
-					toggleLike(cardId, isLiked1);
-					isLiked1 == true ? likeCount[index].textContent-- : likeCount[index].textContent++;
-					button.classList.toggle("card__like-button_is-active");
-				});
-			});
-		};
-	});
-};
-
-// Функция обновления профиля
-export function editProfile() {
-	change_user_info(profileName.value, profileDesc.value)
-	.then((res) => {
-		if(res) {
-			closePopup(document.querySelector(".popup_type_edit"));
-			currentName.textContent = profileName.value;
-			currentDesc.textContent = profileDesc.value;
-			};
-		});
-};
-
-// Функция обновления аватара
-export function updateUserAvatar() {
-	change_avatar(avatarInput.value);
-	userAvatar.style.backgroundImage = `url(${avatarInput.value})`;
-	closePopup(document.querySelector(".popup_type_avatar"));
-	avatarInput.value = "";
-};
 
 // Функция для открытия попапа изображения карточки
-export function handleCardImageClick(cardData) {
-	const popupImg = document.querySelector(".popup_type_image");
-	const popupImage = popupImg.querySelector(".popup__image");
-	const popupCaption = popupImg.querySelector(".popup__caption");
+function handleImageClick(cardData) {
+    popupImage.src = cardData.link;
+    popupImage.alt = cardData.name;
+    popupCaption.textContent = cardData.name;
+    showPopup(popupImg);
+}
 
-	// Устанавливаем URL изображения и описание
-	popupImage.src = cardData.link;
-	popupImage.alt = cardData.name;
-	popupCaption.textContent = cardData.name;
+// Слушатель открытия добавления карточки
+openAddCardBtn.addEventListener("click", () => {
+    formAddCard.reset()
+    clearValidation([inputNameCard, inputLinkCard], saveCardBtn, formAddCard)
+    showPopup(popupAddCard);
+})
 
-	// Открываем попап
-	showPopup(popupImg);
-};
+// Слушатель открытия редактирования профиля
+openEditProfileBtn.addEventListener("click", () => {
+    inputNameProfile.value = userName.textContent;
+    inputAboutProfile.value = userAbout.textContent;
+    clearValidation([inputNameProfile, inputAboutProfile], saveProfileBtn, editProfileForm)
+    showPopup(editProfilePopup);
+})
 
+// Слушатель открытия редактирования аватара
+openEditAvatarBtn.addEventListener("click", () => {
+    editAvatarForm.reset();
+    clearValidation([inputLinkAvatar], saveAvatarBtn, editAvatarForm)
+    showPopup(editAvatarPopup)
+})
 
-display();
-document.addEventListener("click", handleButtonClick);
+// Слушатель закрытия модальных окон
+setCloseButton(closeButtons)
+
+// Основные функции
+// Функция для добавления новой карточки
+function addNewCardToPage(name, link, userId, popup, form, button) {
+    startSave(button)
+    addNewCard(name, link)
+        .then((newCard) => {
+            container.prepend(createCard(newCard, userId, {handleImageClick, likeCard, delCard}))
+            button.textContent = 'Сохранено'
+            closePopup(popup);
+            form.reset();
+        })
+        .catch((err) => {
+            button.textContent = 'Ошибка'
+        })
+        .finally(() => {
+            endSave(button)
+        })
+}
+
+// Функция обновления информации о пользователе
+function updateUserInfo(name, about, popup, form, button) {
+    startSave(button)
+    changeUserInfo(name, about)
+        .then(() => {
+            userName.textContent = name;
+            userAbout.textContent = about;
+            button.textContent = 'Сохранено'
+            closePopup(popup);
+            form.reset()
+        })
+        .catch((err) => {
+            button.textContent = 'Ошибка'
+        })
+        .finally(() => {
+            endSave(button)
+        })
+}
+
+// Функция для обновления аватара
+function updateUserAvatar(link, popup, form, button) {
+    startSave(button)
+    changeUserAvatar(link)
+        .then(() => {
+            userAvatar.style.backgroundImage = `url(${link})`;
+            button.textContent = 'Сохранено'
+            closePopup(popup);
+            form.reset()
+        })
+        .catch(() => {
+            button.textContent = 'Ошибка';
+        })
+        .finally(() => {
+            endSave(button)
+        })
+}
+
+// Функция для старта рендеринга
+function startRenderPage() {
+    getUserInfoAndCards()
+        .then((data) => {
+            const userInfo = data[0];
+            const cardData = data[1];
+            userAvatar.style.backgroundImage = `url(${userInfo.avatar})`;
+            userName.textContent = userInfo.name;
+            userAbout.textContent = userInfo.about;
+            cardData.forEach((card) => {
+                container.append(createCard(card, userInfo._id, {handleImageClick, likeCard, delCard}))
+            })
+
+            formAddCard.addEventListener("submit", (event) => {
+                event.preventDefault();
+                addNewCardToPage(inputNameCard.value, inputLinkCard.value, userInfo._id, popupAddCard, formAddCard, saveCardBtn)
+            })
+            editProfileForm.addEventListener("submit", (event) => {
+                event.preventDefault();
+                updateUserInfo(inputNameProfile.value, inputAboutProfile.value, editProfilePopup, event.target, saveProfileBtn)
+            })
+            editAvatarForm.addEventListener("submit", (event) => {
+                event.preventDefault();
+                updateUserAvatar(inputLinkAvatar.value, editAvatarPopup, event.target, saveAvatarBtn)
+            })
+        })
+        .catch((err) => {
+        })
+}
+
+// Дополнительные функции
+// Доп функция для изменения кнопки в начале запроса
+function startSave(button) {
+    button.disabled = true;
+    button.textContent = 'Сохранение...'
+}
+
+// Доп функция для изменения кнопки в конце запроса
+function endSave(button) {
+    setTimeout(() => {
+        button.textContent = 'Cохранить'
+        button.disabled = false
+    }, 1000)
+}
+
+// Функция установки слушателей кнопок закрытия модальных окон
+function setCloseButton(buttons) {
+    buttons.forEach((button) => {
+        button.addEventListener('click', (e) => {
+            closePopup(e.target.closest('.popup'));
+        })
+    })
+}
+
+// Запуск приложения
+document.addEventListener("DOMContentLoaded", startRenderPage)
+// Включаем валидацию - работает на все формы на странице.
+enableValidation();
+

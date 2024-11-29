@@ -1,137 +1,88 @@
 const token = '8303b431-fff7-4eed-95da-47a7d0571887';
 const cohortId = 'wff-cohort-25';
 
-// Конфигурация для всех запросов
-const config = {
-    baseUrl: `https://nomoreparties.co/v1/${cohortId}`,
-    headers: {
-      authorization: token,
-      'Content-Type': 'application/json'
+// Функция проверки ответа от сервера
+function checkResponse(res) {
+    if (!res.ok) {
+        return Promise.reject(`Ошибка: ${res.status}`);
     }
-};
-
-// Пути для URL
-const paths = {
-    userInfo: '/users/me',
-    cards: '/cards',
-    likes: '/cards/likes/',
-    avatar: '/users/me/avatar'
-};
-
-// Методы для запроса
-const methods = {
-    GET: 'GET',
-    POST: 'POST',
-    PUT: 'PUT',
-    DEL: 'DELETE',
-    PATCH: 'PATCH'
+    return res.json();
 }
 
-// Функция для получения информации о пользователе и списка карточек -- ok
-export function get_user_and_cards() {
-    const user_data_response = fetch(`${config.baseUrl}${paths.userInfo}`, {
-        method: methods.GET,
-        headers: config.headers, 
-    })
-    .then((res) => {
-        if(!res.ok) {
-            return false
-        };
-        return res.json();
-    });
-    const cards_data_response = fetch(`${config.baseUrl}${paths.cards}`, {
-        method: methods.GET,
-        headers: config.headers, 
-    })
-    .then((res) => {
-        if(!res.ok) {
-            return false
-        };
-        return res.json()
-    });
+// Функция конфигурации запроса и выполнение запроса в зависимости от action
+function request(action, param1, param2) {
+    const baseUrl = `https://nomoreparties.co/v1/${cohortId}`;
+    let url;
+    let method;
+    let body;
+    let options = {
+        authorization: token,
+        'Content-Type': 'application/json'
+    };
+    if (action === 'optionChangeUserInfo'){
+        url = `${baseUrl}/users/me`;
+        method = 'PATCH';
+        body = JSON.stringify({name: param1, about: param2});
+    }
+    if (action === 'optionChangeAvatar'){
+        url = `${baseUrl}/users/me/avatar`;
+        method = 'PATCH';
+        body = JSON.stringify({avatar: param1});
+    }
+    if (action === 'optionAddCard'){
+        url = `${baseUrl}/cards`
+        method = 'POST';
+        body = JSON.stringify({name: param1, link: param2});
+    }
+    if (action === 'optionDeleteCard'){
+        url = `${baseUrl}/cards/${param1}`
+        method = 'DELETE';
+    }
+    if (action === 'optionLikeCard'){
+        url = `${baseUrl}/cards/likes/${param1}`;
+        // param2 ? method = 'DELETE' : 'PUT';
+        param2 ? method = 'DELETE' : method = 'PUT';
+    }
+    if (action === 'optionGetUserInfo'){
+        url = `${baseUrl}/users/me`;
+    }
+    if (action === 'optionGetCards'){
+        url = `${baseUrl}/cards`;
+    }
+    options = {method: method, headers: options, body: body};
+    return (
+        fetch(url, options).then(checkResponse)
+    );
+}
 
-    return Promise.all([user_data_response, cards_data_response])
-};
+// Функция для получения начальных данных (информация о пользователе и список начальных карточек)
+export function getUserInfoAndCards() {
+    const userInfo = request('optionGetUserInfo');
+    const cardData = request('optionGetCards');
+    return Promise.all([userInfo, cardData]);
+}
 
-// Функция для изменения аватара -- ok
-export function change_avatar(link){
-    const response = fetch(`${config.baseUrl}${paths.avatar}`, {
-        method: methods.PATCH,
-        headers: config.headers,
-        body: JSON.stringify({ avatar: link })
-    })
-    .then((res) => {
-        if (!res.ok) {
-            console.log(`Error => ${res.statusText}`);
-            return false;
-        }
-        return res.ok;
-    })
-    return response;
-};
+// Функция для изменения информации о пользователе
+export function changeUserInfo(name, about) {
+    return request('optionChangeUserInfo', name, about);
+}
 
-// Функция для изменения данных пользователя -- ok
-export function change_user_info(name, about) {
-    const response = fetch(`${config.baseUrl}${paths.userInfo}`, {
-      method: methods.PATCH,
-      headers: config.headers,
-      body: JSON.stringify({ name, about })
-  })
-    .then((res) => {
-        if (!res.ok) {
-            console.log(`Error => ${res.statusText}`);
-            return false;
-        }
-        return res.ok;
-    })
-    return response;
-};
+// Функция для изменения аватара пользователя
+export function changeUserAvatar(avatarLink) {
+    return request('optionChangeAvatar', avatarLink);
+}
 
-// Функция удаления карточки -- ok
-export function deleteCard(card_id){
-  const response = fetch(`${config.baseUrl}${paths.cards}/${card_id}`, {
-    method: methods.DEL,
-    headers: config.headers
-})
-  .then((res) => {
-      if (!res.ok) {
-          console.log(`Error => ${res.statusText}`);
-          return false;
-      }
-      return res.ok;
-  })
-  return response;
-};
+// Функция для добавления новой карточки
+export function addNewCard(name, link) {
+    return request('optionAddCard', name, link);
+}
 
-// Функция для постановки/снятия лайка -- ok
-export function toggleLike(cardID, isLiked){
-  const response = fetch(`${config.baseUrl}${paths.likes}${cardID}`, {
-    method: isLiked ? methods.DEL : methods.PUT,
-    headers: config.headers
-})
-  .then((res) => {
-      if (!res.ok) {
-          console.log(`Error => ${res.statusText}`);
-          return false;
-      }
-      return res.ok;
-  })
-  return response;
-};
+// Функция удаления карточки
+export function deleteCard(cardId) {
+    return request('optionDeleteCard', cardId);
+}
 
-// Функция для добавления новой карточки -- ok
-export function add_new_card(name, link) {
-  const response = fetch(`${config.baseUrl}${paths.cards}`, {
-    method: methods.POST,
-    headers: config.headers,
-    body: JSON.stringify({ name, link })
-})
-  .then((res) => {
-      if (!res.ok) {
-          console.log(`Error => ${res.statusText}`);
-          return false;
-      }
-      return res.json();
-  })
-  return response;
-};
+// Функция постановки снятия лайка
+export function toggleLike(cardId, isLiked) {
+    return request('optionLikeCard', cardId, isLiked)
+}
