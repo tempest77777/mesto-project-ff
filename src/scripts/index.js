@@ -38,6 +38,14 @@ const editAvatarPopup = document.querySelector(".popup_type_avatar");  // Окн
 // Кнопки закрытия popup - окон
 const closeButtons = document.querySelectorAll(".popup__close"); // Все крестики
 
+// Объект настроек для валидации
+const settings = {
+    formSelector: '.popup__form',
+    inputSelector: '.popup__input',
+    submitButtonSelector: '.popup__button',
+    inputErrorClass: 'popup__input_type_error',
+    errorClass: 'popup__input-error_active',
+}
 
 // Функция для открытия попапа изображения карточки
 function handleImageClick(cardData) {
@@ -50,7 +58,7 @@ function handleImageClick(cardData) {
 // Слушатель открытия добавления карточки
 openAddCardBtn.addEventListener("click", () => {
     formAddCard.reset()
-    clearValidation([inputNameCard, inputLinkCard], saveCardBtn, formAddCard)
+    clearValidation([inputNameCard, inputLinkCard], saveCardBtn, formAddCard, settings)
     showPopup(popupAddCard);
 })
 
@@ -58,14 +66,14 @@ openAddCardBtn.addEventListener("click", () => {
 openEditProfileBtn.addEventListener("click", () => {
     inputNameProfile.value = userName.textContent;
     inputAboutProfile.value = userAbout.textContent;
-    clearValidation([inputNameProfile, inputAboutProfile], saveProfileBtn, editProfileForm)
+    clearValidation([inputNameProfile, inputAboutProfile], saveProfileBtn, editProfileForm, settings)
     showPopup(editProfilePopup);
 })
 
 // Слушатель открытия редактирования аватара
 openEditAvatarBtn.addEventListener("click", () => {
     editAvatarForm.reset();
-    clearValidation([inputLinkAvatar], saveAvatarBtn, editAvatarForm)
+    clearValidation([inputLinkAvatar], saveAvatarBtn, editAvatarForm, settings)
     showPopup(editAvatarPopup)
 })
 
@@ -81,7 +89,6 @@ function addNewCardToPage(name, link, userId, popup, form, button) {
             container.prepend(createCard(newCard, userId, {handleImageClick, likeCard, delCard}))
             button.textContent = 'Сохранено'
             closePopup(popup);
-            form.reset();
         })
         .catch((err) => {
             button.textContent = 'Ошибка'
@@ -154,8 +161,7 @@ function startRenderPage() {
                 updateUserAvatar(inputLinkAvatar.value, editAvatarPopup, event.target, saveAvatarBtn)
             })
         })
-        .catch((err) => {
-        })
+        .catch(console.error)
 }
 
 // Дополнительные функции
@@ -170,7 +176,7 @@ function endSave(button) {
     setTimeout(() => {
         button.textContent = 'Cохранить'
         button.disabled = false
-    }, 1000)
+    }, 450)
 }
 
 // Функция установки слушателей кнопок закрытия модальных окон
@@ -185,5 +191,5 @@ function setCloseButton(buttons) {
 // Запуск приложения
 document.addEventListener("DOMContentLoaded", startRenderPage)
 // Включаем валидацию - работает на все формы на странице.
-enableValidation();
+enableValidation(settings);
 

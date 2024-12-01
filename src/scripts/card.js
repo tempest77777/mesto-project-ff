@@ -13,16 +13,14 @@ export function createCard(item, userId, {handleImageClick, likeCard, delCard}) 
     const cardTitle = cardElement.querySelector(".card__title");
     cardTitle.textContent = item.name;
     const likeCount = cardElement.querySelector(".card__like-count");
-    likeCount.textContent = item.likes?.length || 0;
+    likeCount.textContent = item.likes?.length;
     const likeButton = cardElement.querySelector(".card__like-button");
     likeButton.classList.toggle(
         "card__like-button_is-active",
         item.likes?.some((like) => like._id === userId)
     );
-    let isLiked = likeButton.classList.contains("card__like-button_is-active");
     likeButton.addEventListener("click", () => {
-        likeCard(item._id, isLiked, likeCount, likeButton)
-        isLiked = !isLiked;
+        likeCard(item._id, likeCount, likeButton)
     })
     const deleteButton = cardElement.querySelector(".card__delete-button");
     if (!(item.owner && item.owner._id === userId)) {
@@ -35,14 +33,15 @@ export function createCard(item, userId, {handleImageClick, likeCard, delCard}) 
     return cardElement;
 }
 
-export function likeCard(cardId, isLiked, likeCount, likeButton) {
+export function likeCard(cardId, likeCount, likeButton) {
+    let isLiked = likeButton.classList.contains("card__like-button_is-active");
     likeButton.disabled = true;
     toggleLike(cardId, isLiked)
         .then((like) => {
-            isLiked === true ? likeCount.textContent-- : likeCount.textContent++;
             likeButton.classList.toggle("card__like-button_is-active");
+            likeCount.textContent = like.likes.length;
         })
-        .catch((err) => {})
+        .catch(console.error)
         .finally(() => {
             likeButton.disabled = false;
         })
@@ -56,7 +55,16 @@ export function delCard(cardId, cardElement, deleteButton) {
             currentCard.remove();
 
         })
-        .catch((err) => {
+        .catch(console.error)       // *
+        .finally(() => {
             deleteButton.disabled = false;
         })
 }
+
+/*
+*   Я исправил замечание, которое Вы оставили, но у меня есть 1 вопрос. Зачем нужно переводить кнопку в активное
+* состояние в блоке .finally, если при успешном ответе от сервера карточка удалится со страницы вместе с кнопкой,
+* то есть активировать уже будет нечего. А если будет ошибка ответа от сервера, то кнопка станет вновь активной для
+* повторной попытки (логика была такой)
+*
+*/
